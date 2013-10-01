@@ -1,0 +1,26 @@
+#player_fragment {
+    left: 5px;
+    right: 5px;
+}
+
+#current_track {
+    text-align: right;
+}
+
+#previous_track {
+    text-align: left;
+}
+
+#play_progress {
+    display: block;
+    width: auto;
+    margin: 10px 60px;
+}
+
+.play_timestamp {
+    margin: 9px 0;
+}
+
+div {
+    border: 1px solid;
+}

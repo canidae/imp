@@ -1,0 +1,104 @@
+$(function() {
+    var NavigationView = Backbone.View.extend({
+        el: '#header',
+        events: {
+        },
+        render: function() {
+            var template = _.template($('#template-navigation').html(), {});
+            this.$el.html(template);
+        }
+    });
+
+    var PlayerView = Backbone.View.extend({
+        el: '#footer',
+        events: {
+            "click #play_button": "playPause",
+            "click #next_button": "playerStop"
+        },
+        render: function() {
+            var template = _.template($('#template-player').html(), {});
+            this.$el.html(template);
+
+            // events from player will not propagate
+            this.$el.find("#player").on("ended", $.proxy(this.playerStop, this));
+            this.$el.find("#player").on("timeupdate", $.proxy(this.playerUpdateTime, this));
+            this.$el.find("#player").on("durationchange", $.proxy(this.playerDurationChange, this));
+        },
+
+        playPause: function(ev) {
+            var player = this.$el.find("#player")[0];
+            var icon = $(ev.currentTarget).find(".glyphicon");
+            if (player.paused) {
+                player.play();
+                icon.removeClass("glyphicon-play");
+                icon.addClass("glyphicon-pause");
+            } else {
+                player.pause();
+                icon.removeClass("glyphicon-pause");
+                icon.addClass("glyphicon-play");
+            }
+        },
+
+        playerStop: function() {
+            var that = this;
+            $.ajax({
+                url: "randomTrack"
+            }).done(function(msg) {
+                var player = that.$el.find("#player");
+                var oggSource = player.find("#source_ogg");
+                var mp3Source = player.find("#source_mp3");
+                oggSource[0].src = "/playTrack/" + msg.song;
+                player[0].load();
+                player[0].play();
+                var icon = that.$el.find("#play_button .glyphicon");
+                icon.removeClass("glyphicon-play");
+                icon.addClass("glyphicon-pause");
+            });
+        },
+
+        playerUpdateTime: function() {
+            var player = this.$el.find("#player")[0];
+            var seconds = Math.floor(player.currentTime);
+            if (isNaN(seconds))
+                seconds = 0;
+            var minutes = Math.floor(seconds / 60);
+            var playTime = this.$el.find("#current_time");
+            playTime.text((minutes <= 9 ? "0" : "") + minutes + ":" + (seconds <= 9 ? "0" : "") + seconds % 60);
+            var playProgress = this.$el.find("#play_progress");
+            var progress = player.currentTime / player.duration;
+            if (isNaN(progress))
+                progress = 0;
+            playProgress.attr("value", progress);
+            playProgress.text(Math.floor(progress * 100) + "%");
+        },
+
+        playerDurationChange: function() {
+            var player = this.$el.find("#player")[0];
+            var seconds = Math.floor(player.duration);
+            if (isNaN(seconds))
+                seconds = 0;
+            var minutes = Math.floor(seconds / 60);
+            var totalTime = this.$el.find("#total_time");
+            totalTime.text((minutes <= 9 ? "0" : "") + minutes + ":" + (seconds <= 9 ? "0" : "") + seconds % 60);
+        }
+    });
+
+    var Router = Backbone.Router.extend({
+        routes: {
+            '': 'home'
+        },
+
+        home: function() {
+        }
+    });
+
+    this.router = new Router();
+
+    var navigationView = new NavigationView();
+    navigationView.render();
+
+    var playerView = new PlayerView();
+    playerView.render();
+
+    Backbone.history.start();
+});
