@@ -23,6 +23,9 @@ $(function() {
             this.$el.find("#player").on("ended", $.proxy(this.playerStop, this));
             this.$el.find("#player").on("timeupdate", $.proxy(this.playerUpdateTime, this));
             this.$el.find("#player").on("durationchange", $.proxy(this.playerDurationChange, this));
+
+            // start a song
+            this.playerStop();
         },
 
         playPause: function(ev) {
@@ -45,14 +48,16 @@ $(function() {
                 url: "randomTrack"
             }).done(function(msg) {
                 var player = that.$el.find("#player");
-                var oggSource = player.find("#source_ogg");
-                var mp3Source = player.find("#source_mp3");
-                oggSource[0].src = "/playTrack/" + msg.song;
+                var source1 = player.find("#source_1");
+                var source2 = player.find("#source_2");
+                source1[0].src = "/playTrack/" + msg.member_id + "/" + msg.track_id + "/" + "1" + "/" + msg.original_format;
                 player[0].load();
                 player[0].play();
                 var icon = that.$el.find("#play_button .glyphicon");
                 icon.removeClass("glyphicon-play");
                 icon.addClass("glyphicon-pause");
+            }).fail(function() {
+                console.log(arguments);
             });
         },
 
@@ -62,8 +67,9 @@ $(function() {
             if (isNaN(seconds))
                 seconds = 0;
             var minutes = Math.floor(seconds / 60);
+            seconds = seconds % 60;
             var playTime = this.$el.find("#current_time");
-            playTime.text((minutes <= 9 ? "0" : "") + minutes + ":" + (seconds <= 9 ? "0" : "") + seconds % 60);
+            playTime.text((minutes <= 9 ? "0" : "") + minutes + ":" + (seconds <= 9 ? "0" : "") + seconds);
             var playProgress = this.$el.find("#play_progress");
             var progress = player.currentTime / player.duration;
             if (isNaN(progress))
@@ -78,8 +84,9 @@ $(function() {
             if (isNaN(seconds))
                 seconds = 0;
             var minutes = Math.floor(seconds / 60);
+            seconds = seconds % 60;
             var totalTime = this.$el.find("#total_time");
-            totalTime.text((minutes <= 9 ? "0" : "") + minutes + ":" + (seconds <= 9 ? "0" : "") + seconds % 60);
+            totalTime.text((minutes <= 9 ? "0" : "") + minutes + ":" + (seconds <= 9 ? "0" : "") + seconds);
         }
     });
 

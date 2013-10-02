@@ -70,7 +70,8 @@ CREATE TABLE track (
     track_id integer NOT NULL,
     member_id integer NOT NULL,
     artist character varying(512) NOT NULL,
-    title character varying(512) NOT NULL
+    title character varying(512) NOT NULL,
+    original_format character varying(5) NOT NULL
 );
 
 
@@ -131,12 +132,12 @@ SELECT pg_catalog.setval('member_member_id_seq', 1, true);
 -- Data for Name: track; Type: TABLE DATA; Schema: public; Owner: imp
 --
 
-COPY track (track_id, member_id, artist, title) FROM stdin;
-1	1	artist	title
-2	1	artist	title
-3	1	artist	title
-4	1	artist	title
-5	1	artist	title
+COPY track (track_id, member_id, artist, title, original_format) FROM stdin;
+4	1	artist	title	mp3
+5	1	artist	title	mp3
+1	1	Mandopony	Shimmer On	mp3
+2	1	Shpongle	Brain in a Fishtank	mp3
+3	1	mind.in.a.box	Lament for Lost Dreams (snippet)	ogg
 \.
 
 

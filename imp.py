@@ -13,26 +13,26 @@ def index():
 def randomTrack():
     connection = psycopg2.connect("host='localhost' dbname='imp' user='imp' password='imp'")
     cursor = connection.cursor()
-    cursor.execute("select track_id, member_id, artist, title from track order by random() limit 1")
+    cursor.execute("select track_id, member_id, artist, title, original_format from track order by random() limit 1")
     result = cursor.fetchone()
-    print "Artist: " + result[2] + ", Title: " + result[3]
+    return jsonify(track_id = result[0], member_id = result[1], artist = result[2], title = result[3], original_format = result[4])
 
-    matches = []
-    for root, dirnames, filenames in walk('music'):
-        for filename in filter(filenames, '*.mp3'):
-            matches.append(filename)
-    return jsonify(song = choice(matches))
+@app.route("/searchTrack/<text>")
+def searchTrack():
+    # TODO
+    return ''
 
-@app.route("/playTrack/<member_id>/<track_id>/<source>")
-def playTrack(path):
-    # TODO: source is a predefined list of "original", "320mp3", "q9ogg", etc
-    #       although we don't know what format "original" is, and we don't want
-    #       to convert 128mp3 to 320mp3, and we won't know format of original
-    #       file by just "original".
-    #       need to think this through.
-    #       also need to sanitize input values
-    return send_file("music/" + member_id + "/" + track_id + "/" + source)
+@app.route("/playTrack/<int:member_id>/<int:track_id>/<int:quality>/<extension>")
+def playTrack(member_id, track_id, quality, extension):
+    # quality: 1 (original), 2 (~320 kbit), 3 (~160 kbit), 4 (~80 kbit)
+    # extension: flac, ogg (vorbis), mp3
+    # NOTE:
+    # - there will only be one valid extension for quality 1 (original)
+    # - for the lower qualities, ogg vorbis and mp3 files are created, but no flac
+    if len(extension) > 5:
+        return # simplistic protection for the time being, the other values are integers and likely safe
+    return send_file('music/' + str(member_id) + '/' + str(track_id) + '/' + str(quality) + '.' + extension)
 
 if __name__ == "__main__":
     app.debug = True
-    app.run(threaded=True)
+    app.run(threaded = True)
