@@ -18,9 +18,11 @@ def randomTrack():
     return jsonify(track_id = result[0], member_id = result[1], artist = result[2], title = result[3], original_format = result[4])
 
 @app.route("/searchTrack/<text>")
-def searchTrack():
-    # TODO
-    return ''
+def searchTrack(text):
+    # TODO: use tsvector and nice stuff in postgres
+    # - should create an own "search" table
+    # - also put all metadata in it's own table
+    return text
 
 @app.route("/playTrack/<int:member_id>/<int:track_id>/<int:quality>/<extension>")
 def playTrack(member_id, track_id, quality, extension):
