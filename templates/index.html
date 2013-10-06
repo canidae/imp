@@ -15,7 +15,7 @@
     <section id="content">
     </section>
 
-    <footer id="footer" class="navbar-fixed-bottom">
+    <footer id="footer">
     </footer>
 
     <!-- templates -->
@@ -56,22 +56,27 @@
       </nav>
     </script>
 
-    <script type="text/template" id="template-tracklisting">
-      <% _.each(tracks, function(track) { %>
+    <script type="text/template" id="template-track">
       <div class="row">
         <div class="col-md-12">
-          <p><%= track.get('artist') %> - <%= track.get('title') %></p>
+          <p><%= artist %> - <%= title %></p>
         </div>
       </div>
     </script>
 
+    <script type="text/template" id="template-search_result">
+      <h1>Search result</h1>
+      <div id="search_result">
+      </div>
+    </script>
+
     <script type="text/template" id="template-player">
-      <div id="player_fragment">
+      <div id="player_fragment" class="navbar-fixed-bottom">
         <div class="row">
           <div class="col-md-4">
             <div id="current_track" class="row">
-              <h3 class="title col-md-12">Behind Closed Eyelids</h3>
-              <h4 class="artist col-md-12">Shpongle</h4>
+              <h3 id="current_track_title" class="title col-md-12">Behind Closed Eyelids</h3>
+              <h4 id="current_track_artist" class="artist col-md-12">Shpongle</h4>
             </div>
           </div>
           <div class="col-md-4">
@@ -101,8 +106,8 @@
           </div>
           <div class="col-md-4">
             <div id="previous_track" class="row">
-              <h3 class="title col-md-12">Heavyweight</h3>
-              <h4 class="artist col-md-12">Infected Mushroom</h4>
+              <h3 id="previous_track_title" class="title col-md-12">Heavyweight</h3>
+              <h4 id="previous_track_artist" class="artist col-md-12">Infected Mushroom</h4>
             </div>
           </div>
         </div>

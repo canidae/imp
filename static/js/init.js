@@ -16,9 +16,25 @@ $(function() {
                     url: "searchTrack/" + text
                 }).done(function(msg) {
                     console.log(msg);
+                    var searchResultView = new SearchResultView();
+                    searchResultView.render(msg);
                 }).fail(function() {
                     console.log(arguments);
                 });
+            }
+        }
+    });
+
+    var SearchResultView = Backbone.View.extend({
+        el: '#content',
+        events: {
+        },
+        render: function(searchResult) {
+            var template = _.template($('#template-search_result').html(), {});
+            this.$el.html(template);
+            for (var a = 0; a < searchResult.length; ++a) {
+                var trackTemplate = _.template($('#template-track').html(), searchResult[a]);
+                console.log(trackTemplate);
             }
         }
     });
@@ -70,6 +86,14 @@ $(function() {
                 var icon = that.$el.find("#play_button .glyphicon");
                 icon.removeClass("glyphicon-play");
                 icon.addClass("glyphicon-pause");
+
+                // update current/previous
+                var currentTrackTitle = that.$el.find("#current_track_title");
+                var currentTrackArtist = that.$el.find("#current_track_artist");
+                that.$el.find("#previous_track_title").html(currentTrackTitle.html());
+                that.$el.find("#previous_track_artist").html(currentTrackArtist.html());
+                currentTrackTitle.html(msg.title);
+                currentTrackArtist.html(msg.artist);
             }).fail(function() {
                 console.log(arguments);
             });
