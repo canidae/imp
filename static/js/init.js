@@ -12,13 +12,13 @@ $(function() {
         searchKeypress: function(ev) {
             if (ev.keyCode === 13) {
                 var text = this.$el.find("#search_box")[0].value;
-            $.ajax({
-                url: "searchTrack/" + text
-            }).done(function(msg) {
-                console.log(msg);
-            }).fail(function() {
-                console.log(arguments);
-            });
+                $.ajax({
+                    url: "searchTrack/" + text
+                }).done(function(msg) {
+                    console.log(msg);
+                }).fail(function() {
+                    console.log(arguments);
+                });
             }
         }
     });

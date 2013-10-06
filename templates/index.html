@@ -57,6 +57,12 @@
     </script>
 
     <script type="text/template" id="template-tracklisting">
+      <% _.each(tracks, function(track) { %>
+      <div class="row">
+        <div class="col-md-12">
+          <p><%= track.get('artist') %> - <%= track.get('title') %></p>
+        </div>
+      </div>
     </script>
 
     <script type="text/template" id="template-player">
