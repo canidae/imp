@@ -80,7 +80,7 @@ $(function() {
                 var player = that.$el.find("#player");
                 var source1 = player.find("#source_1");
                 var source2 = player.find("#source_2");
-                source1[0].src = "/playTrack/" + msg.member_id + "/" + msg.track_id + "/" + "1" + "/" + msg.original_format;
+                source1[0].src = "/playTrack/" + msg.track[0] + "/" + msg.track[1] + "/" + "1" + "/" + msg.track[2];
                 player[0].load();
                 player[0].play();
                 var icon = that.$el.find("#play_button .glyphicon");
