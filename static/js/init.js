@@ -15,9 +15,8 @@ $(function() {
                 $.ajax({
                     url: "searchTrack/" + text
                 }).done(function(msg) {
-                    console.log(msg);
                     var searchResultView = new SearchResultView();
-                    searchResultView.render(msg);
+                    searchResultView.render(msg.tracks);
                 }).fail(function() {
                     console.log(arguments);
                 });
@@ -29,13 +28,16 @@ $(function() {
         el: '#content',
         events: {
         },
-        render: function(searchResult) {
-            var template = _.template($('#template-search_result').html(), {});
-            this.$el.html(template);
-            for (var a = 0; a < searchResult.length; ++a) {
-                var trackTemplate = _.template($('#template-track').html(), searchResult[a]);
-                console.log(trackTemplate);
+        render: function(tracks) {
+            console.log(tracks);
+            this.$el.html(_.template($('#template-search_result').html(), {}));
+            var output = "";
+            var trackTemplate = _.template($('#template-track').html());
+            for (var a = 0; a < tracks.length; ++a) {
+                var track = trackTemplate({num: a + 1, artist: tracks[a][3], title: tracks[a][4]});
+                output += track;
             }
+            this.$('#search_result').append(output);
         }
     });
 

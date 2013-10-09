@@ -1,6 +1,3 @@
-from fnmatch import filter
-from os import walk, path
-from random import choice
 from flask import Flask, render_template, send_file, jsonify
 import psycopg2
 app = Flask(__name__)

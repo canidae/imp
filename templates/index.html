@@ -58,8 +58,14 @@
 
     <script type="text/template" id="template-track">
       <div class="row">
-        <div class="col-md-12">
-          <p><%= artist %> - <%= title %></p>
+        <div class="col-md-1" data-track_id="<%= track_id %>" data-member_id="<%= member_id %>">
+          <p><%= num %></p>
+        </div>
+        <div class="col-md-4">
+          <p><%= artist %></p>
+        </div>
+        <div class="col-md-7">
+          <p><%= title %></p>
         </div>
       </div>
     </script>
