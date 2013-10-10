@@ -1,10 +1,16 @@
-from flask import Flask, render_template, send_file, jsonify
+from flask import Flask, render_template, send_file, jsonify, request
 import psycopg2
 app = Flask(__name__)
 
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/uploadFiles", methods = ['POST'])
+def uploadFiles():
+    for uploadFile in request.files.getlist('files'):
+        print uploadFile
+    return ""
 
 @app.route("/randomTrack")
 def randomTrack():

@@ -1,3 +1,5 @@
+var searchResult;
+
 $(function() {
     var NavigationView = Backbone.View.extend({
         el: '#header',
@@ -15,8 +17,9 @@ $(function() {
                 $.ajax({
                     url: "searchTrack/" + text
                 }).done(function(msg) {
+                    searchResult = msg.tracks;
                     var searchResultView = new SearchResultView();
-                    searchResultView.render(msg.tracks);
+                    searchResultView.render();
                 }).fail(function() {
                     console.log(arguments);
                 });
@@ -28,16 +31,26 @@ $(function() {
         el: '#content',
         events: {
         },
-        render: function(tracks) {
-            console.log(tracks);
+        render: function() {
             this.$el.html(_.template($('#template-search_result').html(), {}));
             var output = "";
             var trackTemplate = _.template($('#template-track').html());
-            for (var a = 0; a < tracks.length; ++a) {
-                var track = trackTemplate({num: a + 1, artist: tracks[a][3], title: tracks[a][4]});
-                output += track;
+            for (var a = 0; a < searchResult.length; ++a) {
+                var track = searchResult[a];
+                output += trackTemplate({num: a + 1, member_id: track[0], track_id: track[1], artist: track[3], title: track[4]});
             }
             this.$('#search_result').append(output);
+            $('.nav li').removeClass("active");
+            $('#nav-search').addClass("active");
+        }
+    });
+
+    var QueueAndHistoryView = Backbone.View.extend({
+        el: '#content',
+        events: {
+        },
+        render: function() {
+            this.$el.html(_.template($('#template-queue_and_history').html(), {}));
         }
     });
 
@@ -94,8 +107,8 @@ $(function() {
                 var currentTrackArtist = that.$el.find("#current_track_artist");
                 that.$el.find("#previous_track_title").html(currentTrackTitle.html());
                 that.$el.find("#previous_track_artist").html(currentTrackArtist.html());
-                currentTrackTitle.html(msg.title);
-                currentTrackArtist.html(msg.artist);
+                currentTrackTitle.html(msg.track[3]);
+                currentTrackArtist.html(msg.track[4]);
             }).fail(function() {
                 console.log(arguments);
             });
@@ -146,6 +159,9 @@ $(function() {
 
     var playerView = new PlayerView();
     playerView.render();
+
+    var queueAndHistoryView = new QueueAndHistoryView();
+    queueAndHistoryView.render();
 
     Backbone.history.start();
 });
