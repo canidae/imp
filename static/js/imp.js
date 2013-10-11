@@ -145,10 +145,18 @@ $(function() {
 
     var Router = Backbone.Router.extend({
         routes: {
-            '': 'home'
+            '': 'home',
+            'search': 'search'.
+            'upload': 'upload'
         },
 
         home: function() {
+        },
+
+        search: function() {
+        },
+
+        upload: function() {
         }
     });
 

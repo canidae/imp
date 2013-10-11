@@ -37,9 +37,9 @@
             </div>
           </div>
           <ul class="nav navbar-nav">
-            <li id="nav-search"><a href="#">Search</a></li>
-            <li id="nav-queue_history" class="active"><a href="#">Queue/history</a></li>
-            <li id="nav-upload"><a href="#">Upload</a></li>
+            <li id="nav-search"><a href="#search">Search</a></li>
+            <li id="nav-queue_history" class="active"><a href="#queue">Queue/history</a></li>
+            <li id="nav-upload"><a href="#upload">Upload</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li class="dropdown">
@@ -79,14 +79,17 @@
     <script type="text/template" id="template-queue_and_history">
       <div id="queue">
         <p>Queue goes here</p>
-        <form action="/uploadFiles" enctype="multipart/form-data" method="POST">
-          <input type="file" multiple name="files">
-          <input type="submit" value="Upload">
-        </form>
       </div>
       <div id="history">
         <p>History goes here</p>
       </div>
+    </script>
+
+    <script type="text/template" id="template-upload">
+      <form action="/uploadFiles" enctype="multipart/form-data" method="POST">
+        <input type="file" multiple name="files">
+        <input type="submit" value="Upload">
+      </form>
     </script>
 
     <script type="text/template" id="template-player">
