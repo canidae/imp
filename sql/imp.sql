@@ -3,6 +3,7 @@
 --
 
 SET statement_timeout = 0;
+SET lock_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
@@ -133,11 +134,12 @@ SELECT pg_catalog.setval('member_member_id_seq', 1, true);
 --
 
 COPY track (track_id, member_id, artist, title, original_format) FROM stdin;
-4	1	artist	title	mp3
-5	1	artist	title	mp3
-1	1	Mandopony	Shimmer On	mp3
-2	1	Shpongle	Brain in a Fishtank	mp3
-3	1	mind.in.a.box	Lament for Lost Dreams (snippet)	ogg
+1	1	canidae	A minor chord	wav
+2	1	canidae	A major chord	wav
+3	1	canidae	C major chord	wav
+4	1	canidae	D major chord	wav
+5	1	canidae	E minor chord	wav
+6	1	canidae	G major chord	wav
 \.
 
 
@@ -145,7 +147,7 @@ COPY track (track_id, member_id, artist, title, original_format) FROM stdin;
 -- Name: track_track_id_seq; Type: SEQUENCE SET; Schema: public; Owner: imp
 --
 
-SELECT pg_catalog.setval('track_track_id_seq', 5, true);
+SELECT pg_catalog.setval('track_track_id_seq', 6, true);
 
 
 --
