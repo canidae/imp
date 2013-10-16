@@ -1,4 +1,4 @@
-var searchResult;
+var searchResult = [];
 
 $(function() {
     var NavigationView = Backbone.View.extend({
@@ -32,6 +32,8 @@ $(function() {
         events: {
         },
         render: function() {
+            $('.nav li').removeClass("active");
+            $('#nav-search').addClass("active");
             this.$el.html(_.template($('#template-search_result').html(), {}));
             var output = "";
             var trackTemplate = _.template($('#template-track').html());
@@ -40,8 +42,6 @@ $(function() {
                 output += trackTemplate({num: a + 1, member_id: track[0], track_id: track[1], artist: track[3], title: track[4]});
             }
             this.$('#search_result').append(output);
-            $('.nav li').removeClass("active");
-            $('#nav-search').addClass("active");
         }
     });
 
@@ -50,7 +50,20 @@ $(function() {
         events: {
         },
         render: function() {
+            $('.nav li').removeClass("active");
+            $('#nav-queue_history').addClass("active");
             this.$el.html(_.template($('#template-queue_and_history').html(), {}));
+        }
+    });
+
+    var UploadView = Backbone.View.extend({
+        el: '#content',
+        events: {
+        },
+        render: function() {
+            $('.nav li').removeClass("active");
+            $('#nav-upload').addClass("active");
+            this.$el.html(_.template($('#template-upload').html(), {}));
         }
     });
 
@@ -145,18 +158,25 @@ $(function() {
 
     var Router = Backbone.Router.extend({
         routes: {
-            '': 'home',
+            '': 'queue',
             'search': 'search',
+            'queue': 'queue',
             'upload': 'upload'
         },
 
-        home: function() {
+        search: function() {
+            var searchResultView = new SearchResultView();
+            searchResultView.render();
         },
 
-        search: function() {
+        queue: function() {
+            var queueAndHistoryView = new QueueAndHistoryView();
+            queueAndHistoryView.render();
         },
 
         upload: function() {
+            var uploadView = new UploadView();
+            uploadView.render();
         }
     });
 
