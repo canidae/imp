@@ -1,6 +1,7 @@
 /* variables */
-var searchResult = [];
-var playQueue = [];
+var searchResult = []; // result from last search
+var blockRandomTrackQuery = false; // prevents multiple calls for random track when queue is empty
+var playQueue = []; // our queue of tracks to play
 
 /* views */
 var NavigationView = Backbone.View.extend({
@@ -65,7 +66,7 @@ var UploadView = Backbone.View.extend({
     render: function() {
         $('.nav li').removeClass("active");
         $('#nav-upload').addClass("active");
-        this.$el.html(_.template($('#template-upload').html(), {}));
+        this.$el.html(_.template($('#template-upload').html(), {member_id: 1,}));
     }
 });
 
@@ -170,13 +171,17 @@ var PlayerView = Backbone.View.extend({
         playProgress.attr("value", progress);
         playProgress.text(Math.floor(progress * 100) + "%");
 
-        if (player.duration - player.currentTime < 5 && playQueue.length == 0) {
+        if (player.duration - player.currentTime < 0.5 && playQueue.length == 0 && !blockRandomTrackQuery) {
+            console.log("Empty playlist, fetching random track");
+            blockRandomTrackQuery = true;
             $.ajax({
                 url: "randomTrack"
             }).done(function(msg) {
                 playQueue.push(msg.track);
             }).fail(function() {
                 console.log(arguments);
+            }).complete(function() {
+                blockRandomTrackQuery = false;
             });
         }
     },

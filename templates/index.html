@@ -85,7 +85,7 @@
     </script>
 
     <script type="text/template" id="template-upload">
-      <form action="/uploadFiles" enctype="multipart/form-data" method="POST">
+      <form action="/uploadFiles/<%= member_id %>" enctype="multipart/form-data" method="POST">
         <input type="file" multiple name="files">
         <input type="submit" value="Upload">
       </form>
