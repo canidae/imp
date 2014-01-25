@@ -1,6 +1,7 @@
 from flask import Flask, render_template, send_file, jsonify, request
 from os import path, makedirs
 import psycopg2
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -11,7 +12,7 @@ def index():
 @app.route('/uploadFiles/<int:member_id>', methods = ['POST'])
 def uploadFiles(member_id):
     for uploadFile in request.files.getlist('files'):
-        if uploadFile.mimetype not in ['audio/flac', 'audio/mp3', 'audio/wav', 'audio/ogg']:
+        if uploadFile.mimetype not in ['audio/flac', 'audio/mp3', 'audio/ogg']:
             # file is not a type we support, discard it
             return ''
         extension = uploadFile.mimetype[uploadFile.mimetype.find('/') + 1:]
@@ -22,7 +23,8 @@ def uploadFiles(member_id):
         cursor = connection.cursor()
         cursor.execute("select nextval('track_track_id_seq')")
         result = cursor.fetchone()
-        uploadFile.save(uploadDir + str(result[0]) + '.' + extension)
+        filename = uploadDir + str(result[0]) + '.' + extension
+        uploadFile.save(filename)
         # TODO: convert to quality 2-4 ogg/mp3, move files, add to database, etc
         # TODO: run this outside of flask? i.e. cronjob-ish? it's multithreaded so not a big issue, yet...
         # TODO: on the other hand, the client is waiting for a response...
