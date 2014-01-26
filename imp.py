@@ -1,5 +1,6 @@
 from flask import Flask, render_template, send_file, jsonify, request
-from os import path, makedirs
+from os import listdir, makedirs, path
+
 import psycopg2
 
 app = Flask(__name__)
@@ -19,15 +20,13 @@ def uploadFiles(member_id):
         uploadDir = 'music/' + str(member_id) + '/upload/'
         if not path.exists(uploadDir):
             makedirs(uploadDir)
-        connection = getDatabaseConnection()
-        cursor = connection.cursor()
-        cursor.execute("select nextval('track_track_id_seq')")
-        result = cursor.fetchone()
-        filename = uploadDir + str(result[0]) + '.' + extension
+        upload_num = 1
+        for existing_file in listdir(uploadDir):
+            tmp_num = int(existing_file[:existing_file.find('.')])
+            if tmp_num >= upload_num:
+                upload_num = tmp_num + 1
+        filename = uploadDir + str(upload_num) + '.' + extension
         uploadFile.save(filename)
-        # TODO: convert to quality 2-4 ogg/mp3, move files, add to database, etc
-        # TODO: run this outside of flask? i.e. cronjob-ish? it's multithreaded so not a big issue, yet...
-        # TODO: on the other hand, the client is waiting for a response...
     return ''
 
 @app.route('/randomTrack')
@@ -50,16 +49,11 @@ def searchTrack(text):
     result = cursor.fetchall()
     return jsonify(tracks = result)
 
-@app.route('/playTrack/<int:member_id>/<int:track_id>/<int:quality>/<extension>')
-def playTrack(member_id, track_id, quality, extension):
-    # quality: 1 (original), 2 (~320 kbit), 3 (~160 kbit), 4 (~80 kbit)
-    # extension: flac, ogg (vorbis), mp3
-    # NOTE:
-    # - there will only be one valid extension for quality 1 (original)
-    # - for the lower qualities, ogg vorbis and mp3 files are created, but no flac
-    if len(extension) > 5:
-        return # simplistic protection for the time being, the other values are integers and likely safe
-    return send_file('music/' + str(member_id) + '/' + str(track_id) + '/' + str(quality) + '.' + extension)
+@app.route('/playTrack/<int:member_id>/<int:track_id>/<filename>')
+def playTrack(member_id, track_id, filename):
+    if len(filename) > 8:
+        return # simplistic protection for the time being, the other values are integers and likely safe. # TODO: regex match filename with '^\w+\.\w+$' (\w = a-zA-Z0-9_)
+    return send_file('music/' + str(member_id) + '/' + str(track_id) + '/' + filename)
 
 def getDatabaseConnection():
     # TODO: remember database connection over requests

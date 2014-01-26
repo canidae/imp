@@ -112,7 +112,8 @@ var PlayerView = Backbone.View.extend({
             var source1 = player.find("#source_1");
             var source2 = player.find("#source_2");
             var track = playQueue.shift();
-            source1[0].src = "/playTrack/" + track[0] + "/" + track[1] + "/" + "1" + "/" + track[2];
+            source1[0].src = "/playTrack/" + track[0] + "/" + track[1] + "/" + "4_n.ogg";
+            source2[0].src = "/playTrack/" + track[0] + "/" + track[1] + "/" + "4_n.mp3";
             player[0].load();
             player[0].play();
             var icon = this.$el.find("#play_button .glyphicon");
@@ -135,7 +136,8 @@ var PlayerView = Backbone.View.extend({
                 var player = that.$el.find("#player");
                 var source1 = player.find("#source_1");
                 var source2 = player.find("#source_2");
-                source1[0].src = "/playTrack/" + msg.track[0] + "/" + msg.track[1] + "/" + "1" + "/" + msg.track[2];
+                source1[0].src = "/playTrack/" + msg.track[0] + "/" + msg.track[1] + "/" + "4_n.ogg";
+                source2[0].src = "/playTrack/" + msg.track[0] + "/" + msg.track[1] + "/" + "4_n.mp3";
                 player[0].load();
                 player[0].play();
                 var icon = that.$el.find("#play_button .glyphicon");
