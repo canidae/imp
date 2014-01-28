@@ -4,39 +4,77 @@ import psycopg2
 import shutil
 import subprocess
 
+import acoustid
+from musicbrainz2.webservice import Query, TrackIncludes, WebServiceError
+
 from mutagen.easyid3 import EasyID3
 from mutagen.flac import FLAC
 from mutagen.oggvorbis import OggVorbis
 
 db = psycopg2.connect("host='localhost' dbname='imp' user='imp' password='imp'")
+mb = Query()
+acoustid_apikey = '8XaBELgH' # TODO: 'k5TfSNsw' is our api key, but it doesn't work yet (maybe some delay in servers?)
 
 for filename in glob.glob('music/*/upload/*.*'):
     print ''
-    print filename
+    print 'File:', filename
+    print '================================================================================'
     member_id = filename[len('music/'):filename.find('/upload')]
     basename = filename[:filename.rfind('.')]
     original_format = filename[filename.rfind('.') + 1:].lower()
-    print '--------------------------------------------------------------------------------'
-    print 'Decoding'
+
+    print 'Fetching metadata from file'
     print '--------------------------------------------------------------------------------'
     if filename.endswith('.flac'):
         audio = FLAC(filename)
-        subprocess.call(['flac', '--decode', '-f', filename])
+        decode_command = ['flac', '--decode', '-f', filename]
     elif filename.endswith('.ogg'):
         audio = OggVorbis(filename)
-        subprocess.call(['oggdec', filename])
+        decode_command = ['oggdec', filename]
     elif filename.endswith('.mp3'):
         audio = EasyID3(filename)
-        subprocess.call(['lame', '--decode', filename])
+        decode_command = ['lame', '--decode', filename]
     else:
-        print "don't know to handle this file"
+        print "Don't know to handle this file"
         continue
 
-    # fetch metadata
-    artist = audio['artist'][0]
-    title = audio['title'][0]
+    artist = audio['artist'][0] if 'artist' in audio else ''
+    title = audio['title'][0] if 'title' in audio else ''
 
+    print artist
+    print title
+
+    print 'Looking up track on AcoustID/MusicBrainz'
     print '--------------------------------------------------------------------------------'
+    acoustid_duration, acoustid_fingerprint = acoustid.fingerprint_file(filename) # TODO: use fingerprint & duration to check for duplicates in database
+    acoustid_result = acoustid.parse_lookup_result(acoustid.lookup(acoustid_apikey, acoustid_fingerprint, acoustid_duration))
+    mb_track_id = ''
+    for a in acoustid_result:
+        mb_track_id = a[1]
+        try:
+            track = mb.getTrackById(mb_track_id, TrackIncludes(artist=True))
+            mb_track_title = track.getTitle()
+            mb_track_artist = track.getArtist().getName()
+        except WebServiceError, e:
+            print 'Error:', e
+
+        print 'Track ID:', mb_track_id
+        print 'Title   :', mb_track_title
+        print 'Artist  :', mb_track_artist
+        print
+
+        # TODO: match track id with files in database to check for duplicates
+
+        # just pick first found track for now, we'll probably need to handle this somehow
+        break
+
+    if mb_track_id == '':
+        print 'Track not found in MusicBrainz database'
+
+    print 'Decoding to wav'
+    print '--------------------------------------------------------------------------------'
+    subprocess.call(decode_command)
+
     print 'Applying ReplayGain'
     print '--------------------------------------------------------------------------------'
     wavefile = basename + '.wav'
@@ -49,11 +87,10 @@ for filename in glob.glob('music/*/upload/*.*'):
 
     try:
         os.mkdir(basename)
-    except OSError:
-        print "TODO"
+    except OSError, e:
+        print 'Error:', e
 
-    print '--------------------------------------------------------------------------------'
-    print 'Encoding Ogg Vorbis'
+    print 'Encoding to Ogg Vorbis'
     print '--------------------------------------------------------------------------------'
     subprocess.call(['oggenc', '-q', '8', '-o', os.path.join(basename, '2.ogg'), wavefile])
     subprocess.call(['oggenc', '-q', '8', '-o', os.path.join(basename, '2_n.ogg'), wavefile_norm])
@@ -62,8 +99,7 @@ for filename in glob.glob('music/*/upload/*.*'):
     subprocess.call(['oggenc', '-q', '2', '-o', os.path.join(basename, '4.ogg'), wavefile])
     subprocess.call(['oggenc', '-q', '2', '-o', os.path.join(basename, '4_n.ogg'), wavefile_norm])
 
-    print '--------------------------------------------------------------------------------'
-    print 'Encoding Lame MP3'
+    print 'Encoding to Lame MP3'
     print '--------------------------------------------------------------------------------'
     subprocess.call(['lame', '--noreplaygain', '-V', '0', wavefile, os.path.join(basename, '2.mp3')])
     subprocess.call(['lame', '--noreplaygain', '-V', '0', wavefile_norm, os.path.join(basename, '2_n.mp3')])
