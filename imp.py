@@ -21,10 +21,8 @@ def uploadFiles(member_id):
         if not path.exists(uploadDir):
             makedirs(uploadDir)
         upload_num = 1
-        for existing_file in listdir(uploadDir):
-            tmp_num = int(existing_file[:existing_file.find('.')])
-            if tmp_num >= upload_num:
-                upload_num = tmp_num + 1
+        while path.exists(uploadDir + str(upload_num) + '.' + extension):
+            upload_num += 1
         filename = uploadDir + str(upload_num) + '.' + extension
         uploadFile.save(filename)
     return ''

@@ -35,8 +35,8 @@ SET default_with_oids = false;
 
 CREATE TABLE member (
     member_id integer NOT NULL,
-    loginname character varying(256) NOT NULL,
-    password character varying(512) NOT NULL
+    username text NOT NULL,
+    password text NOT NULL
 );
 
 
@@ -64,15 +64,28 @@ ALTER SEQUENCE member_member_id_seq OWNED BY member.member_id;
 
 
 --
+-- Name: metadata; Type: TABLE; Schema: public; Owner: imp; Tablespace: 
+--
+
+CREATE TABLE metadata (
+    track_id integer NOT NULL,
+    field text NOT NULL,
+    "values" text[] NOT NULL
+);
+
+
+ALTER TABLE public.metadata OWNER TO imp;
+
+--
 -- Name: track; Type: TABLE; Schema: public; Owner: imp; Tablespace: 
 --
 
 CREATE TABLE track (
     track_id integer NOT NULL,
     member_id integer NOT NULL,
-    artist character varying(512) NOT NULL,
-    title character varying(512) NOT NULL,
-    original_format character varying(5) NOT NULL
+    original_format text NOT NULL,
+    duration integer NOT NULL,
+    fingerprint text NOT NULL
 );
 
 
@@ -117,8 +130,7 @@ ALTER TABLE ONLY track ALTER COLUMN track_id SET DEFAULT nextval('track_track_id
 -- Data for Name: member; Type: TABLE DATA; Schema: public; Owner: imp
 --
 
-COPY member (member_id, loginname, password) FROM stdin;
-1	canidae	supersecretshasum
+COPY member (member_id, username, password) FROM stdin;
 \.
 
 
@@ -126,20 +138,22 @@ COPY member (member_id, loginname, password) FROM stdin;
 -- Name: member_member_id_seq; Type: SEQUENCE SET; Schema: public; Owner: imp
 --
 
-SELECT pg_catalog.setval('member_member_id_seq', 1, true);
+SELECT pg_catalog.setval('member_member_id_seq', 1, false);
+
+
+--
+-- Data for Name: metadata; Type: TABLE DATA; Schema: public; Owner: imp
+--
+
+COPY metadata (track_id, field, "values") FROM stdin;
+\.
 
 
 --
 -- Data for Name: track; Type: TABLE DATA; Schema: public; Owner: imp
 --
 
-COPY track (track_id, member_id, artist, title, original_format) FROM stdin;
-1	1	canidae	A minor chord	wav
-2	1	canidae	A major chord	wav
-3	1	canidae	C major chord	wav
-4	1	canidae	D major chord	wav
-5	1	canidae	E minor chord	wav
-6	1	canidae	G major chord	wav
+COPY track (track_id, member_id, original_format, duration, fingerprint) FROM stdin;
 \.
 
 
@@ -147,7 +161,7 @@ COPY track (track_id, member_id, artist, title, original_format) FROM stdin;
 -- Name: track_track_id_seq; Type: SEQUENCE SET; Schema: public; Owner: imp
 --
 
-SELECT pg_catalog.setval('track_track_id_seq', 6, true);
+SELECT pg_catalog.setval('track_track_id_seq', 1, false);
 
 
 --
@@ -159,11 +173,27 @@ ALTER TABLE ONLY member
 
 
 --
+-- Name: metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: imp; Tablespace: 
+--
+
+ALTER TABLE ONLY metadata
+    ADD CONSTRAINT metadata_pkey PRIMARY KEY (track_id, field);
+
+
+--
 -- Name: track_pkey; Type: CONSTRAINT; Schema: public; Owner: imp; Tablespace: 
 --
 
 ALTER TABLE ONLY track
     ADD CONSTRAINT track_pkey PRIMARY KEY (track_id);
+
+
+--
+-- Name: metadata_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: imp
+--
+
+ALTER TABLE ONLY metadata
+    ADD CONSTRAINT metadata_track_id_fkey FOREIGN KEY (track_id) REFERENCES track(track_id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
