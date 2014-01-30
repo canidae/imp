@@ -31,7 +31,7 @@ def uploadFiles(member_id):
 def randomTrack():
     connection = getDatabaseConnection()
     cursor = connection.cursor()
-    cursor.execute('select member_id, track_id, original_format, artist, title from track order by random() limit 1')
+    cursor.execute('select t.member_id, t.track_id, t.original_format, (select array_agg(fv) from (select field, values from metadata m where m.track_id = t.track_id) fv) from track t order by random() limit 1')
     result = cursor.fetchone()
     #return jsonify(member_id = result[0], track_id = result[1], original_format = result[2], artist = result[3], title = result[4])
     return jsonify(track = result)

@@ -64,19 +64,6 @@ ALTER SEQUENCE member_member_id_seq OWNED BY member.member_id;
 
 
 --
--- Name: metadata; Type: TABLE; Schema: public; Owner: imp; Tablespace: 
---
-
-CREATE TABLE metadata (
-    track_id integer NOT NULL,
-    field text NOT NULL,
-    "values" text[] NOT NULL
-);
-
-
-ALTER TABLE public.metadata OWNER TO imp;
-
---
 -- Name: track; Type: TABLE; Schema: public; Owner: imp; Tablespace: 
 --
 
@@ -85,7 +72,8 @@ CREATE TABLE track (
     member_id integer NOT NULL,
     original_format text NOT NULL,
     duration integer NOT NULL,
-    fingerprint text NOT NULL
+    fingerprint text NOT NULL,
+    metadata json NOT NULL
 );
 
 
@@ -142,18 +130,10 @@ SELECT pg_catalog.setval('member_member_id_seq', 1, false);
 
 
 --
--- Data for Name: metadata; Type: TABLE DATA; Schema: public; Owner: imp
---
-
-COPY metadata (track_id, field, "values") FROM stdin;
-\.
-
-
---
 -- Data for Name: track; Type: TABLE DATA; Schema: public; Owner: imp
 --
 
-COPY track (track_id, member_id, original_format, duration, fingerprint) FROM stdin;
+COPY track (track_id, member_id, original_format, duration, fingerprint, metadata) FROM stdin;
 \.
 
 
@@ -173,27 +153,11 @@ ALTER TABLE ONLY member
 
 
 --
--- Name: metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: imp; Tablespace: 
---
-
-ALTER TABLE ONLY metadata
-    ADD CONSTRAINT metadata_pkey PRIMARY KEY (track_id, field);
-
-
---
 -- Name: track_pkey; Type: CONSTRAINT; Schema: public; Owner: imp; Tablespace: 
 --
 
 ALTER TABLE ONLY track
     ADD CONSTRAINT track_pkey PRIMARY KEY (track_id);
-
-
---
--- Name: metadata_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: imp
---
-
-ALTER TABLE ONLY metadata
-    ADD CONSTRAINT metadata_track_id_fkey FOREIGN KEY (track_id) REFERENCES track(track_id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

@@ -1,4 +1,5 @@
 import glob
+import json
 import os
 import psycopg2
 import shutil
@@ -15,7 +16,7 @@ from mutagen.oggvorbis import OggVorbis
 
 db = psycopg2.connect("host='localhost' dbname='imp' user='imp' password='imp'")
 mb = Query()
-acoustid_apikey = '8XaBELgH' # TODO: 'k5TfSNsw' is our api key, but it doesn't work yet (maybe some delay in servers?)
+acoustid_key = '8XaBELgH' # TODO: 'k5TfSNsw' is our api key, but it doesn't work yet (maybe some delay in servers?)
 
 for filename in glob.glob('music/*/upload/*.*'):
     try:
@@ -50,40 +51,41 @@ for filename in glob.glob('music/*/upload/*.*'):
         # TODO: max 3 requests/sec to AcoustID/MusicBrainz, just sleeping a sec for the time being
         time.sleep(1)
         acoustid_duration, acoustid_fingerprint = acoustid.fingerprint_file(filename) # TODO: use fingerprint & duration to check for duplicates in database? seems like matching fingerprints is not trivial
-        acoustid_result = acoustid.parse_lookup_result(acoustid.lookup(acoustid_apikey, acoustid_fingerprint, acoustid_duration))
-        mb_metadata = {}
+        acoustid_result = acoustid.parse_lookup_result(acoustid.lookup(acoustid_key, acoustid_fingerprint, acoustid_duration))
+        mb_metadata = []
         for result in acoustid_result:
-            mb_metadata['musicbrainz_track_id'] = [result[1]]
-            try:
-                track = mb.getTrackById(mb_metadata['musicbrainz_track_id'][0], TrackIncludes(artist=True, releases=True))
-                mb_metadata['artist'] = [track.getArtist().getName()]
-                mb_metadata['title'] = [track.getTitle()]
-                mb_metadata['musicbrainz_artist_id'] = [track.getArtist().getId()[track.getArtist().getId().rfind('/') + 1:]]
-                for release in track.getReleases():
-                    if 'album' not in mb_metadata:
-                        mb_metadata['album'] = []
-                        mb_metadata['tracknumber'] = []
-                        mb_metadata['musicbrainz_release_id'] = []
-                    mb_metadata['album'].append(release.getTitle())
-                    mb_metadata['tracknumber'].append(release.getTracksOffset() + 1)
-                    mb_metadata['musicbrainz_release_id'].append(release.getId()[release.getId().rfind('/') + 1:])
-                    if release.getArtist() is not None:
-                        if 'albumartist' not in mb_metadata:
-                            mb_metadata['albumartist'] = []
-                            mb_metadata['musicbrainz_release_id'] = []
-                        mb_metadata['albumartist'].append(release.getArtist().getName())
-                        mb_metadata['musicbrainz_albumartist_id'].append(release.getArtist().getId()[release.getArtist().getId().rfind('/') + 1:])
+            track = mb.getTrackById(result[1], TrackIncludes(artist=True, releases=True)) # TODO: needs to be limited, what if we get 20 results from acoustid?
+            releases = []
+            for release in track.getReleases():
+                releases.append({
+                    'name': release.getTitle(),
+                    'tracknum': release.getTracksOffset() + 1,
+                    'musicbrainz_release_id': release.getId()[release.getId().rfind('/') + 1:]
+                })
+            mb_metadata.append({
+                'artist': track.getArtist().getName(),
+                'title': track.getTitle(),
+                'releases': releases,
+                'musicbrainz_track_id': result[1],
+                'musicbrainz_artist_id': track.getArtist().getId()[track.getArtist().getId().rfind('/') + 1:]
+            })
 
-            except WebServiceError, e:
-                print 'Error:', e
-
-            # TODO: match track id with files in database to check for duplicates
-
-            # just pick first found track for now, we'll probably need to handle this somehow
-            break
-
-        if 'musicbrainz_track_id' not in mb_metadata:
-            print 'Track not found in MusicBrainz database'
+        # TODO: need to handle metadata better
+        if len(mb_metadata) > 0:
+            metadata = mb_metadata[0] # just picking first result if we found something in musicbrainz database
+        else:
+            print 'Track not found in MusicBrainz database, using metadata from file'
+            metadata = {}
+            if 'artist' in file_metadata:
+                metadata['artist'] = file_metadata['artist'][0]
+            if 'title' in file_metadata:
+                metadata['title'] = file_metadata['title'][0]
+            if 'album' in file_metadata:
+                release = {}
+                release['name'] = file_metadata['album'][0]
+                if 'tracknumber' in file_metadata:
+                    release['tracknum'] = file_metadata['tracknumber'][0]
+                metadata['releases'] = [release]
 
         print 'Decoding to wav'
         print '--------------------------------------------------------------------------------'
@@ -137,19 +139,7 @@ for filename in glob.glob('music/*/upload/*.*'):
 
         # update database
         cursor = db.cursor()
-        cursor.execute("insert into track(track_id, member_id, original_format, duration, fingerprint) values (%s, %s, %s, %s, %s)", (track_id, member_id, original_format, acoustid_duration, acoustid_fingerprint))
-        if 'musicbrainz_track_id' in mb_metadata:
-            for field, values in mb_metadata.iteritems():
-                cursor.execute("insert into metadata(track_id, field, values) values (%s, %s, %s)", (track_id, field, values))
-        else:
-            if 'artist' in file_metadata:
-                cursor.execute("insert into metadata(track_id, field, values) values (%s, %s, %s)", (track_id, 'artist', file_metadata['artist']))
-            if 'title' in file_metadata:
-                cursor.execute("insert into metadata(track_id, field, values) values (%s, %s, %s)", (track_id, 'title', file_metadata['title']))
-            if 'album' in file_metadata:
-                cursor.execute("insert into metadata(track_id, field, values) values (%s, %s, %s)", (track_id, 'album', file_metadata['album']))
-            if 'tracknumber' in file_metadata:
-                cursor.execute("insert into metadata(track_id, field, values) values (%s, %s, %s)", (track_id, 'tracknumber', file_metadata['tracknumber']))
+        cursor.execute("insert into track(track_id, member_id, original_format, duration, fingerprint, metadata) values (%s, %s, %s, %s, %s, %s)", (track_id, member_id, original_format, acoustid_duration, acoustid_fingerprint, json.dumps(metadata)))
         db.commit()
         cursor.close()
 
